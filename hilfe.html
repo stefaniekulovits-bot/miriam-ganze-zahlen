@@ -13,6 +13,84 @@ iframe{display:block;width:100%;height:100%;border:0}
 <iframe id="game" src="lernspiel.html" title="Miriam Ganze Zahlen Lernspiel"></iframe>
 <script>
 const frame=document.getElementById('game');
+function signed(n){return n<0?'−'+Math.abs(n):'+'+n}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function detailedMath(q,correct){
+  const text=(q||'').replace(/−/g,'-');
+  const m=text.match(/\(\s*([+-]?\d+)\s*\)\s*([+-])\s*\(\s*([+-]?\d+)\s*\)/);
+  if(!m)return null;
+  const a=parseInt(m[1],10), op=m[2], b=parseInt(m[3],10);
+  const result=(op==='+'?a+b:a-b);
+  const resultText=signed(result);
+  let h='<div class="detail-title">So geht die Rechnung Schritt für Schritt</div>';
+  if(op==='-'){
+    const nb=-b;
+    h+='<div><b>1. Subtraktion erkennen:</b> Wir haben '+signed(a)+' − ('+signed(b)+'). Beim Subtrahieren ganzer Zahlen arbeiten wir mit der Gegenzahl.</div>';
+    h+='<div><b>2. Gegenzahl bilden:</b> Die Gegenzahl von '+signed(b)+' ist '+signed(nb)+'. Das Vorzeichen wechselt, die Zahl bleibt gleich groß.</div>';
+    h+='<div><b>3. Umwandeln:</b> '+signed(a)+' − ('+signed(b)+') = '+signed(a)+' + ('+signed(nb)+').</div>';
+    if((a<0&&nb<0)||(a>0&&nb>0)){
+      h+='<div><b>4. Gleiche Vorzeichen:</b> Die Vorzeichen sind gleich. Deshalb addieren wir die Beträge: '+Math.abs(a)+' + '+Math.abs(nb)+' = '+Math.abs(result)+'.</div>';
+      h+='<div><b>5. Vorzeichen:</b> Beide Zahlen sind '+(a<0?'negativ':'positiv')+', deshalb bleibt das Vorzeichen '+(result<0?'−':'＋')+'.</div>';
+    }else{
+      const big=Math.max(Math.abs(a),Math.abs(nb)),small=Math.min(Math.abs(a),Math.abs(nb));
+      h+='<div><b>4. Unterschiedliche Vorzeichen:</b> Jetzt vergleichen wir die Beträge. '+big+' ist größer als '+small+'.</div>';
+      h+='<div><b>5. Beträge subtrahieren:</b> '+big+' − '+small+' = '+Math.abs(result)+'.</div>';
+      h+='<div><b>6. Vorzeichen bestimmen:</b> Das Ergebnis bekommt das Vorzeichen der Zahl mit dem größeren Betrag.</div>';
+    }
+  }else{
+    h+='<div><b>1. Vorzeichen anschauen:</b> Die Rechnung lautet '+signed(a)+' + ('+signed(b)+').</div>';
+    if(a===0||b===0){
+      h+='<div><b>2. Null-Regel:</b> Eine Zahl plus 0 bleibt unverändert.</div>';
+    }else if((a<0&&b<0)||(a>0&&b>0)){
+      h+='<div><b>2. Gleiche Vorzeichen:</b> Die Vorzeichen sind gleich. Deshalb addieren wir die Beträge.</div>';
+      h+='<div><b>3. Beträge addieren:</b> '+Math.abs(a)+' + '+Math.abs(b)+' = '+Math.abs(result)+'.</div>';
+      h+='<div><b>4. Vorzeichen übernehmen:</b> Beide Zahlen sind '+(a<0?'negativ':'positiv')+', deshalb bleibt dieses Vorzeichen erhalten.</div>';
+    }else{
+      const big=Math.max(Math.abs(a),Math.abs(b)),small=Math.min(Math.abs(a),Math.abs(b));
+      h+='<div><b>2. Unterschiedliche Vorzeichen:</b> Dann subtrahieren wir die Beträge voneinander.</div>';
+      h+='<div><b>3. Beträge vergleichen:</b> '+big+' ist größer als '+small+'.</div>';
+      h+='<div><b>4. Beträge subtrahieren:</b> '+big+' − '+small+' = '+Math.abs(result)+'.</div>';
+      h+='<div><b>5. Vorzeichen bestimmen:</b> Das Ergebnis bekommt das Vorzeichen der Zahl mit dem größeren Betrag.</div>';
+    }
+  }
+  h+='<div class="final-step"><b>Ergebnis:</b> '+esc(resultText)+'</div>';
+  return h;
+}
+function detailedConcept(q,correct){
+  const t=(q||'').toLowerCase();
+  let h='<div class="detail-title">So gehst du bei solchen Aufgaben vor</div>';
+  if(t.includes('gegenszahl')){
+    h+='<div><b>1.</b> Die Gegenzahl hat genau denselben Abstand von 0.</div><div><b>2.</b> Nur das Vorzeichen wird gewechselt: + wird − und − wird +.</div><div><b>3.</b> Die Zahl selbst bleibt gleich groß.</div>';
+  }else if(t.includes('betrag')||t.includes('|')){
+    h+='<div><b>1.</b> Der Betrag ist der Abstand der Zahl von 0.</div><div><b>2.</b> Ein Abstand kann niemals negativ sein.</div><div><b>3.</b> Deshalb ist der Betrag von −13 genauso 13 wie der Betrag von +13.</div>';
+  }else if(t.includes('kleiner')||t.includes('größer')||t.includes('ordne')||t.includes('vergleich')){
+    h+='<div><b>1.</b> Stell dir die Zahlengerade vor.</div><div><b>2.</b> Weiter links bedeutet kleiner, weiter rechts bedeutet größer.</div><div><b>3.</b> Bei negativen Zahlen ist die Zahl mit dem größeren Abstand zu 0 die kleinere Zahl: −8 ist kleiner als −3.</div>';
+  }else if(t.includes('vorgänger')||t.includes('nachfolger')){
+    h+='<div><b>1.</b> Der Vorgänger liegt genau einen Schritt links.</div><div><b>2.</b> Der Nachfolger liegt genau einen Schritt rechts.</div><div><b>3.</b> Deshalb gilt zum Beispiel: Vorgänger von −3 = −4, Nachfolger von −3 = −2.</div>';
+  }else if(t.includes('zahlengerade')){
+    h+='<div><b>1.</b> 0 ist die Mitte.</div><div><b>2.</b> Rechts von 0 liegen die positiven Zahlen, links die negativen.</div><div><b>3.</b> Prüfe immer die Schrittweite, bevor du die gesuchte Zahl abliest.</div>';
+  }else{
+    h+='<div><b>1.</b> Lies die Aufgabe langsam und markiere zuerst die wichtigen Zahlen und Vorzeichen.</div><div><b>2.</b> Überlege, welche Regel aus dem Thema passt.</div><div><b>3.</b> Rechne erst den einzelnen Schritt aus und prüfe danach das Vorzeichen.</div>';
+  }
+  if(correct!==undefined&&correct!==null&&correct!=='')h+='<div class="final-step"><b>Richtige Lösung:</b> '+esc(correct)+'</div>';
+  return h;
+}
+function addDetailedWrongHelp(d){
+  try{
+    const fb=d.getElementById('feedback'),q=d.getElementById('question');
+    if(!fb||!q)return;
+    const bad=fb.classList.contains('bad');
+    if(!bad){const old=d.getElementById('detailedWrong');if(old)old.remove();return;}
+    if(d.getElementById('detailedWrong'))return;
+    const text=fb.textContent||'';
+    const cm=text.match(/Die richtige Lösung ist\s*([^\.]+)\./i);
+    const correct=cm?cm[1].trim():'';
+    const html=detailedMath(q.textContent||'',correct)||detailedConcept(q.textContent||'',correct);
+    const box=d.createElement('div');box.id='detailedWrong';box.className='helpbox';box.style.cssText='margin-top:10px;border-radius:17px;background:#f3f7ff;border:1px solid #cfdcff;padding:14px;line-height:1.58;font-size:13px;color:#243b53';
+    box.innerHTML=html;
+    fb.insertAdjacentElement('afterend',box);
+  }catch(e){}
+}
 function installBossHelp(){
   try{
     const d=frame.contentDocument;
@@ -20,44 +98,26 @@ function installBossHelp(){
     const boss=d.getElementById('boss'),bt=d.getElementById('bt'),bq=d.getElementById('bq');
     if(!boss||!bt||!bq)return;
     if(!d.getElementById('bossHelpBtn')){
-      const btn=d.createElement('button');
-      btn.id='bossHelpBtn';btn.textContent='💡 Ich weiß nicht weiter';
+      const btn=d.createElement('button');btn.id='bossHelpBtn';btn.textContent='💡 Ich weiß nicht weiter';
       btn.style.cssText='width:100%;border:0;border-radius:14px;background:#eef2ff;color:#4e54a7;padding:12px;font:inherit;font-weight:900;margin-top:10px;cursor:pointer';
-      const box=d.createElement('div');box.id='bossHelpBox';
-      box.style.cssText='display:none;margin-top:10px;border-radius:17px;background:#f3f7ff;border:1px solid #dbe3ff;padding:13px;line-height:1.55;font-size:13px;color:#243b53';
-      bt.parentNode.insertBefore(btn,bt.nextSibling);bt.parentNode.insertBefore(box,btn.nextSibling);
-      btn.addEventListener('click',()=>showBossHelp(d,bq,box));
+      const box=d.createElement('div');box.id='bossHelpBox';box.style.cssText='display:none;margin-top:10px;border-radius:17px;background:#f3f7ff;border:1px solid #dbe3ff;padding:13px;line-height:1.55;font-size:13px;color:#243b53';
+      bt.parentNode.insertBefore(btn,bt.nextSibling);bt.parentNode.insertBefore(box,btn.nextSibling);btn.addEventListener('click',()=>showBossHelp(d,bq,box));
     }
     const btn=d.getElementById('bossHelpBtn'),box=d.getElementById('bossHelpBox');
-    const visible=getComputedStyle(boss).display!=='none';
-    btn.style.display=visible?'block':'none';if(!visible)box.style.display='none';
+    const visible=getComputedStyle(boss).display!=='none';btn.style.display=visible?'block':'none';if(!visible)box.style.display='none';
   }catch(e){}
 }
-function signed(n){return n<0?'−'+Math.abs(n):'+'+n}
 function showBossHelp(d,bq,box){
   const text=(bq.textContent||'').replace('Berechne:','').trim();
   const nums=text.match(/[−-]?\d+/g);
-  if(!nums||nums.length<2){
-    box.innerHTML='<b>Schritt 1:</b> Lies die Rechnung langsam und markiere zuerst die Vorzeichen.<br><b>Schritt 2:</b> Entscheide, ob du addierst oder subtrahierst.<br><b>Schritt 3:</b> Wende die passende Regel für ganze Zahlen an.<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird noch nicht verraten.</div>';
-    box.style.display='block';return;
-  }
-  const a=parseInt(nums[0].replace('−','-'),10),b=parseInt(nums[1].replace('−','-'),10);
-  const isSub=/\)\s*[−-]\s*\(/.test(text);
-  let html='';
-  if(isSub){
-    const nb=-b;
-    html='<b>Schritt 1:</b> Mache aus der Subtraktion eine Addition mit der Gegenzahl.<br>'+signed(a)+' − ('+signed(b)+') wird zu '+signed(a)+' + ('+signed(nb)+').<br><b>Schritt 2:</b> Jetzt ist es eine Additionsaufgabe.<br><b>Schritt 3:</b> '+(a<0&&nb<0?'Beide Zahlen sind negativ: Beträge addieren und das Minus behalten.':a>0&&nb>0?'Beide Zahlen sind positiv: Beträge addieren.':'Bei unterschiedlichen Vorzeichen: Beträge vergleichen und subtrahieren.')+'<br><b>Rechne jetzt selbst weiter.</b>';
-  }else{
-    html='<b>Schritt 1:</b> Schau auf die Vorzeichen der beiden Zahlen.<br>';
-    if(a<0&&b<0)html+='Beide Zahlen sind negativ. <b>Die Beträge werden addiert</b> und das Minus bleibt erhalten.<br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+' und setze danach das Minus davor.';
-    else if(a>=0&&b>=0)html+='Beide Zahlen sind positiv. <b>Die Beträge werden addiert.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+'.';
-    else html+='Die Vorzeichen sind unterschiedlich. <b>Ziehe den kleineren Betrag vom größeren Betrag ab.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' − '+Math.abs(b)+' und nimm das Vorzeichen der Zahl mit dem größeren Betrag.';
-  }
-  box.innerHTML=html+'<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird hier noch nicht verraten – versuche die Rechnung jetzt selbst.</div>';
-  box.style.display='block';
+  if(!nums||nums.length<2){box.innerHTML='<b>Schritt 1:</b> Lies die Rechnung langsam und markiere zuerst die Vorzeichen.<br><b>Schritt 2:</b> Entscheide, ob du addierst oder subtrahierst.<br><b>Schritt 3:</b> Wende die passende Regel für ganze Zahlen an.<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird noch nicht verraten.</div>';box.style.display='block';return;}
+  const a=parseInt(nums[0].replace('−','-'),10),b=parseInt(nums[1].replace('−','-'),10);const isSub=/\)\s*[−-]\s*\(/.test(text);let html='';
+  if(isSub){const nb=-b;html='<b>Schritt 1:</b> Mache aus der Subtraktion eine Addition mit der Gegenzahl.<br>'+signed(a)+' − ('+signed(b)+') wird zu '+signed(a)+' + ('+signed(nb)+').<br><b>Schritt 2:</b> Jetzt ist es eine Additionsaufgabe.<br><b>Schritt 3:</b> '+(a<0&&nb<0?'Beide Zahlen sind negativ: Beträge addieren und das Minus behalten.':a>0&&nb>0?'Beide Zahlen sind positiv: Beträge addieren.':'Bei unterschiedlichen Vorzeichen: Beträge vergleichen und subtrahieren.')+'<br><b>Rechne jetzt selbst weiter.</b>';}else{html='<b>Schritt 1:</b> Schau auf die Vorzeichen der beiden Zahlen.<br>';if(a<0&&b<0)html+='Beide Zahlen sind negativ. <b>Die Beträge werden addiert</b> und das Minus bleibt erhalten.<br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+' und setze danach das Minus davor.';else if(a>=0&&b>=0)html+='Beide Zahlen sind positiv. <b>Die Beträge werden addiert.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+'.';else html+='Die Vorzeichen sind unterschiedlich. <b>Ziehe den kleineren Betrag vom größeren Betrag ab.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' − '+Math.abs(b)+' und nimm das Vorzeichen der Zahl mit dem größeren Betrag.';}
+  box.innerHTML=html+'<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird hier noch nicht verraten – versuche die Rechnung jetzt selbst.</div>';box.style.display='block';
 }
-frame.addEventListener('load',()=>{installBossHelp();setInterval(installBossHelp,300)});
-setInterval(installBossHelp,500);
+function scan(){try{const d=frame.contentDocument;if(!d)return;addDetailedWrongHelp(d);installBossHelp()}catch(e){}}
+frame.addEventListener('load',()=>{scan();setInterval(scan,250)});
+setInterval(scan,500);
 </script>
 </body>
 </html>

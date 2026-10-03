@@ -17,27 +17,20 @@ function installBossHelp(){
   try{
     const d=frame.contentDocument;
     if(!d||!d.body)return;
-    const boss=d.getElementById('boss');
-    const bt=d.getElementById('bt');
-    const bq=d.getElementById('bq');
+    const boss=d.getElementById('boss'),bt=d.getElementById('bt'),bq=d.getElementById('bq');
     if(!boss||!bt||!bq)return;
     if(!d.getElementById('bossHelpBtn')){
       const btn=d.createElement('button');
-      btn.id='bossHelpBtn';
-      btn.textContent='💡 Ich weiß nicht weiter';
-      btn.style.cssText='width:100%;border:0;border-radius:14px;background:#eef2ff;color:#4e54a7;padding:12px;font-weight:950;margin-top:10px;cursor:pointer;font:inherit;font-weight:900';
-      const box=d.createElement('div');
-      box.id='bossHelpBox';
+      btn.id='bossHelpBtn';btn.textContent='💡 Ich weiß nicht weiter';
+      btn.style.cssText='width:100%;border:0;border-radius:14px;background:#eef2ff;color:#4e54a7;padding:12px;font:inherit;font-weight:900;margin-top:10px;cursor:pointer';
+      const box=d.createElement('div');box.id='bossHelpBox';
       box.style.cssText='display:none;margin-top:10px;border-radius:17px;background:#f3f7ff;border:1px solid #dbe3ff;padding:13px;line-height:1.55;font-size:13px;color:#243b53';
-      bt.parentNode.insertBefore(btn,bt.nextSibling);
-      bt.parentNode.insertBefore(box,btn.nextSibling);
-      btn.addEventListener('click',function(){showBossHelp(d,bq,box)});
+      bt.parentNode.insertBefore(btn,bt.nextSibling);bt.parentNode.insertBefore(box,btn.nextSibling);
+      btn.addEventListener('click',()=>showBossHelp(d,bq,box));
     }
-    const btn=d.getElementById('bossHelpBtn');
-    const box=d.getElementById('bossHelpBox');
+    const btn=d.getElementById('bossHelpBtn'),box=d.getElementById('bossHelpBox');
     const visible=getComputedStyle(boss).display!=='none';
-    if(!visible){btn.style.display='none';box.style.display='none';}
-    else{btn.style.display='block';}
+    btn.style.display=visible?'block':'none';if(!visible)box.style.display='none';
   }catch(e){}
 }
 function signed(n){return n<0?'−'+Math.abs(n):'+'+n}
@@ -45,25 +38,25 @@ function showBossHelp(d,bq,box){
   const text=(bq.textContent||'').replace('Berechne:','').trim();
   const nums=text.match(/[−-]?\d+/g);
   if(!nums||nums.length<2){
-    box.innerHTML='<b>Schritt 1:</b> Lies die Rechnung langsam und markiere zuerst die Vorzeichen.<br><b>Schritt 2:</b> Entscheide, ob du addierst oder subtrahierst.<br><b>Schritt 3:</b> Wende die passende Regel für ganze Zahlen an.';
+    box.innerHTML='<b>Schritt 1:</b> Lies die Rechnung langsam und markiere zuerst die Vorzeichen.<br><b>Schritt 2:</b> Entscheide, ob du addierst oder subtrahierst.<br><b>Schritt 3:</b> Wende die passende Regel für ganze Zahlen an.<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird noch nicht verraten.</div>';
     box.style.display='block';return;
   }
-  const a=parseInt(nums[0].replace('−','-'),10), b=parseInt(nums[1].replace('−','-'),10);
-  const isSub=text.includes('−')&&text.indexOf('−')>text.indexOf(String(Math.abs(a)));
+  const a=parseInt(nums[0].replace('−','-'),10),b=parseInt(nums[1].replace('−','-'),10);
+  const isSub=/\)\s*[−-]\s*\(/.test(text);
   let html='';
   if(isSub){
     const nb=-b;
     html='<b>Schritt 1:</b> Mache aus der Subtraktion eine Addition mit der Gegenzahl.<br>'+signed(a)+' − ('+signed(b)+') wird zu '+signed(a)+' + ('+signed(nb)+').<br><b>Schritt 2:</b> Jetzt ist es eine Additionsaufgabe.<br><b>Schritt 3:</b> '+(a<0&&nb<0?'Beide Zahlen sind negativ: Beträge addieren und das Minus behalten.':a>0&&nb>0?'Beide Zahlen sind positiv: Beträge addieren.':'Bei unterschiedlichen Vorzeichen: Beträge vergleichen und subtrahieren.')+'<br><b>Rechne jetzt selbst weiter.</b>';
   }else{
     html='<b>Schritt 1:</b> Schau auf die Vorzeichen der beiden Zahlen.<br>';
-    if(a<0&&b<0){html+='Beide Zahlen sind negativ. <b>Die Beträge werden addiert</b> und das Minus bleibt erhalten.<br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+' und setze danach das Minus davor.';}
-    else if(a>=0&&b>=0){html+='Beide Zahlen sind positiv. <b>Die Beträge werden addiert.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+'.';}
-    else{html+='Die Vorzeichen sind unterschiedlich. <b>Ziehe den kleineren Betrag vom größeren Betrag ab.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' − '+Math.abs(b)+' und nimm das Vorzeichen der Zahl mit dem größeren Betrag.';}
+    if(a<0&&b<0)html+='Beide Zahlen sind negativ. <b>Die Beträge werden addiert</b> und das Minus bleibt erhalten.<br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+' und setze danach das Minus davor.';
+    else if(a>=0&&b>=0)html+='Beide Zahlen sind positiv. <b>Die Beträge werden addiert.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' + '+Math.abs(b)+'.';
+    else html+='Die Vorzeichen sind unterschiedlich. <b>Ziehe den kleineren Betrag vom größeren Betrag ab.</b><br><b>Schritt 2:</b> Rechne '+Math.abs(a)+' − '+Math.abs(b)+' und nimm das Vorzeichen der Zahl mit dem größeren Betrag.';
   }
   box.innerHTML=html+'<div style="margin-top:9px;padding:8px 10px;background:#fff;border-radius:10px;font-weight:800;color:#4e54a7">Die Lösung wird hier noch nicht verraten – versuche die Rechnung jetzt selbst.</div>';
   box.style.display='block';
 }
-frame.addEventListener('load',function(){setInterval(installBossHelp,300);installBossHelp();});
+frame.addEventListener('load',()=>{installBossHelp();setInterval(installBossHelp,300)});
 setInterval(installBossHelp,500);
 </script>
 </body>

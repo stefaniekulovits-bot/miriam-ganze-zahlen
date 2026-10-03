@@ -131,7 +131,7 @@ let state={
   day: dayNumberFromDate(),
   q:null, asked:saved.asked||[], wrong:saved.wrong||[], xp:saved.xp||0,
   streak:saved.streak||0, correct:saved.correct||0, total:saved.total||0,
-  hintStage:0, started:false, startTime:null, seconds:0, done:false
+  hintStage:0, started:false, startTime:null, seconds:0, done:false, lock:false
 };
 function todayPlan(){return plans[state.day]||plans[3]}
 function saveState(){
@@ -158,6 +158,7 @@ function startDay(){
   state.startTime=Date.now();
   state.seconds=0;
   state.done=false;
+  state.lock=false;
   state.hintStage=0;
   document.getElementById("startCard").classList.add("hidden");
   document.getElementById("gameCard").classList.remove("hidden");
@@ -169,6 +170,7 @@ function hidePlan(){document.getElementById("planCard").classList.add("hidden");
 function nextQuestion(){
  if(state.day!==6 && state.seconds>=todayPlan().mins*60){finish();return}
  if(state.day===6 && state.total>=8){finishProbe();return}
+ state.lock=false;
  const pool=state.day===6
    ? bank.filter(q=>q.d===6 && !state.asked.includes(bank.indexOf(q)))
    : bank.filter(q=>q.d<=state.day && !state.asked.includes(bank.indexOf(q)));
@@ -181,6 +183,7 @@ function nextQuestion(){
 }
 function renderQuestion(){
  const q=state.q;
+ state.lock=false;
  document.getElementById("tag").textContent=q.t;
  document.getElementById("question").textContent=q.q;
  document.getElementById("sub").textContent=state.day===6?"📝 Rechne auf Papier. Im Probe-Check gibt es während der Aufgabe keine Tipps.":"Du kannst erst selbst versuchen. Wenn du festhängst, nutze den Tipp.";

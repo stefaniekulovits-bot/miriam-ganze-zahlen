@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b74c9">
+<title>Miriam · Ganze Zahlen Trainer</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#eef6fb}iframe{display:block;width:100%;height:100%;border:0}</style>
+</head>
+<body>
+<iframe id="wrap" src="hilfe.html" title="Miriam Ganze Zahlen Lernspiel"></iframe>
+<script>
+const wrap=document.getElementById('wrap');
+function mode(){
+  const d=new Date();
+  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===4)return'level2';
+  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===5)return'level3';
+  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===6)return'general';
+  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===7)return'checkup';
+  return'general';
+}
+function install(){
+ try{
+  const hw=wrap.contentWindow,hd=wrap.contentDocument,game=hd&&hd.getElementById('game');
+  if(!game||!game.contentWindow)return;
+  const w=game.contentWindow,d=game.contentDocument,m=mode();
+  w.__miriamDayMode=m;
+  if(!w.__miriamOriginalStart)w.__miriamOriginalStart=w.start;
+  if(!w.__miriamOriginalChoose)w.__miriamOriginalChoose=w.chooseQuestion;
+  w.start=function(){
+    if(w.__miriamDayMode==='checkup'){
+      w.showModal('Heute ist der Check-up','Heute wird nicht mehr trainiert. Du hast bis gestern geübt – jetzt geht es in den Check-up.');
+      return;
+    }
+    w.__miriamOriginalStart();
+  };
+  w.chooseQuestion=function(){
+    const original=w.__miriamOriginalChoose,m=w.__miriamDayMode;
+    if(m==='general')return original();
+    let q=null;
+    for(let i=0;i<40;i++){
+      q=original();
+      if((m==='level2'&&q.level===2)||(m==='level3'&&q.level===3))return q;
+    }
+    return q;
+  };
+  const mission=d.getElementById('mission');
+  if(mission){
+    if(m==='level2')mission.textContent='Heute: Level 2 – Addieren und Subtrahieren. Erst verstehen, dann sicher rechnen.';
+    if(m==='level3')mission.textContent='Heute: Level 3 – schwierige Rechnungen, Klammern und Sachaufgaben.';
+    if(m==='general')mission.textContent='Heute: Generalprobe – gemischte Aufgaben aus dem gesamten Stoff, inklusive Papieraufgaben.';
+    if(m==='checkup')mission.textContent='Heute ist der Check-up. Kein Training mehr.';
+  }
+  const hero=d.querySelector('.hero p');
+  if(hero){
+    if(m==='level2')hero.textContent='Heute: Level 2 – Addieren und Subtrahieren. Gestern waren die Grundlagen dran.';
+    if(m==='level3')hero.textContent='Heute: Level 3 – schwierige Rechnungen, Klammern und Anwendungen.';
+    if(m==='general')hero.textContent='Heute: Generalprobe – gemischter Stoff wie beim Check-up.';
+    if(m==='checkup')hero.textContent='Heute ist der Check-up. Am 7.10. wird nicht mehr trainiert.';
+  }
+ }catch(e){}
+}
+wrap.addEventListener('load',()=>setTimeout(install,100));
+setInterval(install,500);
+</script>
+</body>
+</html>

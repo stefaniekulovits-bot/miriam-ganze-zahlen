@@ -13,15 +13,13 @@
 const wrap=document.getElementById('wrap');
 function mode(){
   const d=new Date();
-  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===4)return'level2';
   if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===5)return'level3';
-  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===6)return'general';
-  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===7)return'checkup';
+  if(d.getFullYear()===2026&&d.getMonth()===9&&d.getDate()===6)return'checkup';
   return'general';
 }
 function install(){
  try{
-  const hw=wrap.contentWindow,hd=wrap.contentDocument,game=hd&&hd.getElementById('game');
+  const hd=wrap.contentDocument,game=hd&&hd.getElementById('game');
   if(!game||!game.contentWindow)return;
   const w=game.contentWindow,d=game.contentDocument,m=mode();
   w.__miriamDayMode=m;
@@ -29,34 +27,30 @@ function install(){
   if(!w.__miriamOriginalChoose)w.__miriamOriginalChoose=w.chooseQuestion;
   w.start=function(){
     if(w.__miriamDayMode==='checkup'){
-      w.showModal('Heute ist der Check-up','Heute wird nicht mehr trainiert. Du hast bis gestern geübt – jetzt geht es in den Check-up.');
+      w.showModal('Heute ist der Check-up','Heute wird nicht mehr trainiert. Du hast gestern deine letzte Übungsrunde gemacht – jetzt geht es in den Check-up.');
       return;
     }
     w.__miriamOriginalStart();
   };
   w.chooseQuestion=function(){
     const original=w.__miriamOriginalChoose,m=w.__miriamDayMode;
-    if(m==='general')return original();
+    if(m!=='level3')return original();
     let q=null;
     for(let i=0;i<40;i++){
       q=original();
-      if((m==='level2'&&q.level===2)||(m==='level3'&&q.level===3))return q;
+      if(q.level===3)return q;
     }
     return q;
   };
   const mission=d.getElementById('mission');
   if(mission){
-    if(m==='level2')mission.textContent='Heute: Level 2 – Addieren und Subtrahieren. Erst verstehen, dann sicher rechnen.';
-    if(m==='level3')mission.textContent='Heute: Level 3 – schwierige Rechnungen, Klammern und Sachaufgaben.';
-    if(m==='general')mission.textContent='Heute: Generalprobe – gemischte Aufgaben aus dem gesamten Stoff, inklusive Papieraufgaben.';
-    if(m==='checkup')mission.textContent='Heute ist der Check-up. Kein Training mehr.';
+    if(m==='level3')mission.textContent='Heute ist dein letzter Lerntag: Level 3 – schwierige Rechnungen, Klammern, Sachaufgaben und Fehler wiederholen.';
+    if(m==='checkup')mission.textContent='Heute ist der Check-up. Kein Training mehr – du hast gestern deine letzte Übungsrunde gemacht.';
   }
   const hero=d.querySelector('.hero p');
   if(hero){
-    if(m==='level2')hero.textContent='Heute: Level 2 – Addieren und Subtrahieren. Gestern waren die Grundlagen dran.';
-    if(m==='level3')hero.textContent='Heute: Level 3 – schwierige Rechnungen, Klammern und Anwendungen.';
-    if(m==='general')hero.textContent='Heute: Generalprobe – gemischter Stoff wie beim Check-up.';
-    if(m==='checkup')hero.textContent='Heute ist der Check-up. Am 7.10. wird nicht mehr trainiert.';
+    if(m==='level3')hero.textContent='Letzter Lerntag: schwierige Rechnungen, Klammern, Anwendungen und deine Fehler wiederholen.';
+    if(m==='checkup')hero.textContent='Heute ist der Check-up. Kein Training mehr – geh mit einem freien Kopf in den Test.';
   }
  }catch(e){}
 }
